@@ -34,6 +34,8 @@ public class Add_Activity extends AppCompatActivity {
     }
 
     public void Cancel(View view){
-        Add_Activity.this.finish();// 关闭子窗口ChildActivity
+        intent.putExtra("SendBack", 0);
+        setResult(666,intent);
+        finish();
     }
 }

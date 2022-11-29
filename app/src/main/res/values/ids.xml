@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <item name="text_view_hello_world" type="id"/>
+    <item name="tab_layout" type="id" />
+    <item name="view_page" type="id" />
 </resources>
