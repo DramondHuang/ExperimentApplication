@@ -22,6 +22,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.baidu.location.LocationClient;
+import com.baidu.mapapi.CoordType;
+import com.baidu.mapapi.SDKInitializer;
+import com.baidu.mapapi.map.MapStatus;
+import com.baidu.mapapi.map.MapStatusUpdate;
+import com.baidu.mapapi.map.MapStatusUpdateFactory;
+import com.baidu.mapapi.model.LatLng;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
@@ -86,7 +93,7 @@ public class BookListMainActivity extends AppCompatActivity {
 
     FragmentOne frgOne = new FragmentOne();
     WebViewFragment frgTwo = new WebViewFragment();
-    WebViewFragment frgThree=new WebViewFragment();
+    MapViewFragment frgThree=new MapViewFragment();
 
     public int getPosition() {
         return mPosition;
@@ -117,6 +124,7 @@ public class BookListMainActivity extends AppCompatActivity {
         //创建适配器
         MyViewPageAdapter mAdapter = new MyViewPageAdapter(this,mDatas);
         mViewPage.setAdapter(mAdapter);
+        mViewPage.setUserInputEnabled(false);
 
         //TabLayout与ViewPage2联动关键代码
         new TabLayoutMediator(mTabLayout, mViewPage, new TabLayoutMediator.TabConfigurationStrategy() {
@@ -145,6 +153,18 @@ public class BookListMainActivity extends AppCompatActivity {
             public void onTabReselected(TabLayout.Tab tab) {
             }
         });
+
+        SDKInitializer.setAgreePrivacy(getApplicationContext(),true);
+        //初始化百度地图数据
+        //在使用SDK各组件之前初始化context信息，传入ApplicationContext
+        SDKInitializer.initialize(getApplicationContext());
+        //自4.3.0起，百度地图SDK所有接口均支持百度坐标和国测局坐标，用此方法设置您使用的坐标类型.
+        //包括BD09LL和GCJ02两种坐标，默认是BD09LL坐标。
+        SDKInitializer.setCoordType(CoordType.BD09LL);
+        //权限设置
+        LocationClient.setAgreePrivacy(true);
+        //设定中心点坐标
+
     }
 
     protected void initData() throws IOException {
