@@ -4,6 +4,9 @@ import android.app.DownloadManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+
+import android.os.Bundle;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,16 +44,19 @@ import java.util.ArrayList;
 public class MapViewFragment extends Fragment {
     MapView mMapView = null;
     //储存地点
-    ArrayList<Coordinate> coordinates=new ArrayList<>();
+    ArrayList<Coordinate> coordinates = new ArrayList<>();
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState)
-    {
+                             Bundle savedInstanceState) {
         //在使用SDK各组件之前初始化context信息，传入ApplicationContext
         //注意该方法要再setContentView方法之前实现
+
+        //在使用SDK各组件之前初始化context信息，传入ApplicationContext
+        //注意该方法要再setContentView方法之前实现
+
         View view = inflater.inflate(R.layout.fragment_map, container, false);
-        mMapView = (MapView)view.findViewById(R.id.bmapView);
-        LatLng jnu =  new LatLng(22.255925,113.541112);
+        mMapView = (MapView) view.findViewById(R.id.bmapView);
+        LatLng jnu = new LatLng(22.255925, 113.541112);
         //定义地图状态
         MapStatus mMapStatus = new MapStatus.Builder()
                 //要移动的点
@@ -89,8 +95,8 @@ public class MapViewFragment extends Fragment {
 
 
         //sd卡中读取并解析Json
-        String result= getFileFromSdcard("/Android/data/com.jnu.myapplication/files/Download/dxtj.json");
-        try{
+        String result = getFileFromSdcard("/Android/data/com.jnu.myapplication/files/Download/dxtj.json");
+        try {
             // 整个最大的JSON数组
             JSONObject jsonObjectALL = new JSONObject(result);
             // 通过标识(shops)，获取JSON数组
@@ -99,9 +105,9 @@ public class MapViewFragment extends Fragment {
                 // JSON数组里面的具体-JSON对象
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                 String name = jsonObject.optString("name");
-                double latitude=jsonObject.optDouble("latitude");
-                double longitude=jsonObject.optDouble("longitude");
-                Coordinate position=new Coordinate(name,latitude,longitude);
+                double latitude = jsonObject.optDouble("latitude");
+                double longitude = jsonObject.optDouble("longitude");
+                Coordinate position = new Coordinate(name, latitude, longitude);
                 coordinates.add(position);
             }
 
@@ -112,8 +118,8 @@ public class MapViewFragment extends Fragment {
         //给Json中的地点添加marker
         //准备 marker 的图片
         BitmapDescriptor bitmap = BitmapDescriptorFactory.fromResource(R.drawable.school);
-        for (int i=0; i<coordinates.size();i++){
-            LatLng latLng =  new LatLng(coordinates.get(i).latitude,coordinates.get(i).longitude);
+        for (int i = 0; i < coordinates.size(); i++) {
+            LatLng latLng = new LatLng(coordinates.get(i).latitude, coordinates.get(i).longitude);
             //构建TextOptions对象
             OverlayOptions myTextOptions = new TextOptions()
                     .text(coordinates.get(i).name) //文字内容
@@ -140,13 +146,14 @@ public class MapViewFragment extends Fragment {
                 return false;
             }
         });
+
         return view;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-    //在Fragment执行onResume时执行mMapView. onResume ()，实现地图生命周期管理
+        //在Fragment执行onResume时执行mMapView. onResume ()，实现地图生命周期管理
         mMapView.onResume();
 
     }
@@ -154,16 +161,17 @@ public class MapViewFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-    //在Fragment执行onPause时执行mMapView. onPause ()，实现地图生命周期管理
+        //在Fragment执行onPause时执行mMapView. onPause ()，实现地图生命周期管理
         mMapView.onPause();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-    //在Fragment执行onDestroy时执行mMapView.onDestroy()，实现地图生命周期管理
+        //在Fragment执行onDestroy时执行mMapView.onDestroy()，实现地图生命周期管理
         mMapView.onDestroy();
     }
+
     //读取文件
     public String getFileFromSdcard(String fileName) {
         FileInputStream inputStream = null;
@@ -199,3 +207,4 @@ public class MapViewFragment extends Fragment {
         return new String(outputStream.toByteArray());
     }
 }
+

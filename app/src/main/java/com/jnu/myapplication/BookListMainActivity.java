@@ -9,10 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
-import android.app.DownloadManager;
-import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.ContextMenu;
@@ -28,17 +25,9 @@ import android.widget.Toast;
 import com.baidu.location.LocationClient;
 import com.baidu.mapapi.CoordType;
 import com.baidu.mapapi.SDKInitializer;
-import com.baidu.mapapi.map.MapStatus;
-import com.baidu.mapapi.map.MapStatusUpdate;
-import com.baidu.mapapi.map.MapStatusUpdateFactory;
-import com.baidu.mapapi.model.LatLng;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -51,8 +40,6 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.io.InputStream;
-
 public class BookListMainActivity extends AppCompatActivity {
     //private RecyclerView myRecyclerView;
     //private RecyclerAdapter myAdapter;
@@ -60,6 +47,7 @@ public class BookListMainActivity extends AppCompatActivity {
     File file = new File(Environment.getExternalStorageDirectory(),
             "booklist.dat");
     DataSaver myDataSaver = new DataSaver();
+    ArrayList<Book> tempbooklist;
 
     ArrayList<Book> Booklist = new ArrayList<Book>();
     Book Book1 = new Book("软件项目管理案例教程（第4版）", R.drawable.book_2);
@@ -102,7 +90,7 @@ public class BookListMainActivity extends AppCompatActivity {
         mTabLayout = findViewById(R.id.tab_layout);
         mViewPage = findViewById(R.id.view_page);
         //创建适配器
-        MyViewPageAdapter mAdapter = new MyViewPageAdapter(this, mDatas);
+        MyViewPageAdapter mAdapter = new MyViewPageAdapter(this,mDatas);
         mViewPage.setAdapter(mAdapter);
         mViewPage.setUserInputEnabled(false);
 
@@ -126,17 +114,15 @@ public class BookListMainActivity extends AppCompatActivity {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
             }
-
             @Override
             public void onTabUnselected(TabLayout.Tab tab) {
             }
-
             @Override
             public void onTabReselected(TabLayout.Tab tab) {
             }
         });
 
-        SDKInitializer.setAgreePrivacy(getApplicationContext(), true);
+        SDKInitializer.setAgreePrivacy(getApplicationContext(),true);
         //初始化百度地图数据
         //在使用SDK各组件之前初始化context信息，传入ApplicationContext
         SDKInitializer.initialize(getApplicationContext());
@@ -145,16 +131,6 @@ public class BookListMainActivity extends AppCompatActivity {
         SDKInitializer.setCoordType(CoordType.BD09LL);
         //权限设置
         LocationClient.setAgreePrivacy(true);
-
-        //下载Json文件并解析
-        DownloadManager downloadManager = (DownloadManager)getSystemService(DOWNLOAD_SERVICE);
-        String Url = "http://file.nidama.net/class/mobile_develop/data/bookstore2022.json";
-        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(Url));
-        //设置下载路径sdcard->Android->data->com.jnu.myapplication->files->Download
-        request.setDestinationInExternalFilesDir( this , Environment.DIRECTORY_DOWNLOADS ,  "dxtj.json" );
-        long downloadId = downloadManager.enqueue(request);
-
-
     }
 
     protected void initData() throws IOException {
