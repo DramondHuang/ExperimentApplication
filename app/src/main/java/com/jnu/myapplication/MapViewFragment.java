@@ -1,5 +1,6 @@
 package com.jnu.myapplication;
 
+import android.annotation.SuppressLint;
 import android.app.DownloadManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -7,11 +8,14 @@ import android.os.Environment;
 
 import android.os.Bundle;
 
+import android.os.Handler;
+import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import com.baidu.location.LocationClient;
@@ -43,17 +47,19 @@ import java.util.ArrayList;
 
 public class MapViewFragment extends Fragment {
     MapView mMapView = null;
-    //储存地点
-    ArrayList<Coordinate> coordinates = new ArrayList<>();
+    BaiduMap myBaiduMap = null;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        SDKInitializer.setAgreePrivacy(BookMainActivity.getContext(),true);
+        SDKInitializer.initialize(BookMainActivity.getContext());
+        //自4.3.0起，百度地图SDK所有接口均支持百度坐标和国测局坐标，用此方法设置您使用的坐标类型.
+        //包括BD09LL和GCJ02两种坐标，默认是BD09LL坐标。
+        SDKInitializer.setCoordType(CoordType.BD09LL);
         //在使用SDK各组件之前初始化context信息，传入ApplicationContext
         //注意该方法要再setContentView方法之前实现
-
-        //在使用SDK各组件之前初始化context信息，传入ApplicationContext
-        //注意该方法要再setContentView方法之前实现
-
         View view = inflater.inflate(R.layout.fragment_map, container, false);
         mMapView = (MapView) view.findViewById(R.id.bmapView);
         LatLng jnu = new LatLng(22.255925, 113.541112);
@@ -68,84 +74,8 @@ public class MapViewFragment extends Fragment {
         //定义MapStatusUpdate对象，以便描述地图状态将要发生的变化
         MapStatusUpdate mMapStatusUpdate = MapStatusUpdateFactory.newMapStatus(mMapStatus);
         //改变地图状态
-        BaiduMap myBaiduMap = mMapView.getMap();
+        myBaiduMap = mMapView.getMap();
         myBaiduMap.setMapStatus(mMapStatusUpdate);
-
-//        //添加文字标志，
-//        LatLng northgate =  new LatLng(22.255453,113.54145);
-//        //构建TextOptions对象
-//        OverlayOptions mTextOptions = new TextOptions()
-//                .text("暨珠实验楼") //文字内容
-//                .bgColor(0xAAFFFF00) //背景色
-//                .fontSize(35) //字号
-//                .fontColor(0xFFFF00FF) //文字颜色
-//                .rotate(0) //旋转角度
-//                .position(northgate);
-//        //在地图上显示文字覆盖物
-//        Overlay mText = myBaiduMap.addOverlay(mTextOptions);
-//
-//        //添加图标
-//        //准备 marker 的图片
-//        BitmapDescriptor bitmap = BitmapDescriptorFactory.fromResource(R.drawable.school);
-//        //准备 marker option 添加 marker 使用
-//        MarkerOptions markerOptions = new MarkerOptions().icon(bitmap).position(jnu);
-//        //获取添加的 marker 这样便于后续的操作
-//        Marker marker = (Marker) myBaiduMap.addOverlay(markerOptions);
-//
-
-
-        //sd卡中读取并解析Json
-        String result = getFileFromSdcard("/Android/data/com.jnu.myapplication/files/Download/dxtj.json");
-        try {
-            // 整个最大的JSON数组
-            JSONObject jsonObjectALL = new JSONObject(result);
-            // 通过标识(shops)，获取JSON数组
-            JSONArray jsonArray = jsonObjectALL.getJSONArray("shops");
-            for (int i = 0; i < jsonArray.length(); i++) {
-                // JSON数组里面的具体-JSON对象
-                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                String name = jsonObject.optString("name");
-                double latitude = jsonObject.optDouble("latitude");
-                double longitude = jsonObject.optDouble("longitude");
-                Coordinate position = new Coordinate(name, latitude, longitude);
-                coordinates.add(position);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        //给Json中的地点添加marker
-        //准备 marker 的图片
-        BitmapDescriptor bitmap = BitmapDescriptorFactory.fromResource(R.drawable.school);
-        for (int i = 0; i < coordinates.size(); i++) {
-            LatLng latLng = new LatLng(coordinates.get(i).latitude, coordinates.get(i).longitude);
-            //构建TextOptions对象
-            OverlayOptions myTextOptions = new TextOptions()
-                    .text(coordinates.get(i).name) //文字内容
-                    .bgColor(0xAAFFFF00) //背景色
-                    .fontSize(35) //字号
-                    .fontColor(0xFFFF00FF) //文字颜色
-                    .rotate(0) //旋转角度
-                    .position(latLng);
-            //在地图上显示文字覆盖物
-            Overlay myText = myBaiduMap.addOverlay(myTextOptions);
-            //添加图标
-            //准备 marker option 添加 marker 使用
-            MarkerOptions mymarkerOptions = new MarkerOptions().icon(bitmap).position(latLng);
-            //获取添加的 marker 这样便于后续的操作
-            Marker mymarker = (Marker) myBaiduMap.addOverlay(mymarkerOptions);
-        }
-
-        //对 marker 添加点击相应事件
-        myBaiduMap.setOnMarkerClickListener(new BaiduMap.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(Marker arg0) {
-                // TODO Auto-generated method stub
-                Toast.makeText(getActivity().getApplicationContext(), "Marker按键响应！", Toast.LENGTH_SHORT).show();
-                return false;
-            }
-        });
 
         return view;
     }
@@ -155,6 +85,47 @@ public class MapViewFragment extends Fragment {
         super.onResume();
         //在Fragment执行onResume时执行mMapView. onResume ()，实现地图生命周期管理
         mMapView.onResume();
+        Handler handler = new Handler() {
+            public void handleMessage(@NonNull Message msg) {
+                //主线程接受子线程发送的信息
+                ArrayList<Coordinate> Handlerget = new ArrayList<>();
+                Handlerget = (ArrayList<Coordinate>) msg.obj;
+                Toast.makeText(BookMainActivity.getContext(), "获取Json数据成功", Toast.LENGTH_SHORT).show();
+                addMarker(Handlerget);
+            }
+
+            ;
+        };
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                ShopLoader dataLoader = new ShopLoader();
+                String shopJsonData = null;
+                try {
+                    shopJsonData = dataLoader.download("http://file.nidama.net/class/mobile_develop/data/bookstore2022.json");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                ArrayList<Coordinate> locations = dataLoader.parsonJson(shopJsonData);
+
+                //使用Handler向主线程发送消息
+                Message msg = new Message();
+                msg.obj = locations;
+                msg.what = 1;
+                handler.sendMessage(msg);
+            }
+        }).start();
+
+        //对 marker 添加点击相应事件
+        myBaiduMap.setOnMarkerClickListener(new BaiduMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker arg0) {
+                // TODO Auto-generated method stub
+                Toast.makeText(getActivity().getApplicationContext(), "Marker Clicked", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+        });
 
     }
 
@@ -172,39 +143,31 @@ public class MapViewFragment extends Fragment {
         mMapView.onDestroy();
     }
 
-    //读取文件
-    public String getFileFromSdcard(String fileName) {
-        FileInputStream inputStream = null;
-        // 缓存的流，和磁盘无关，不需要关闭
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        File file = new File(Environment.getExternalStorageDirectory(), fileName);
-        if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
-            try {
-                inputStream = new FileInputStream(file);
-                int len = 0;
-                byte[] data = new byte[1024];
-                while ((len = inputStream.read(data)) != -1) {
-                    outputStream.write(data, 0, len);
-                }
-
-            } catch (FileNotFoundException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } finally {
-                if (inputStream != null) {
-                    try {
-                        inputStream.close();
-                    } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                }
-            }
+    public void addMarker(ArrayList<Coordinate> coordinates) {
+        BitmapDescriptor bitmap = BitmapDescriptorFactory.fromResource(R.drawable.school);
+        //给Json中的地点添加marker
+        //准备 marker 的图片
+        for (int i = 0; i < coordinates.size(); i++) {
+            Coordinate coordinate = coordinates.get(i);
+            LatLng latLng = new LatLng(coordinate.latitude, coordinate.longitude);
+            //构建TextOptions对象
+            OverlayOptions myTextOptions = new TextOptions()
+                    .text(coordinate.name) //文字内容
+                    .bgColor(0xAAFFFF00) //背景色
+                    .fontSize(35) //字号
+                    .fontColor(0xFFFF00FF) //文字颜色
+                    .rotate(0) //旋转角度
+                    .position(latLng);
+            //在地图上显示文字覆盖物
+            myBaiduMap.addOverlay(myTextOptions);
+            //添加图标
+            //准备 marker option 添加 marker 使用
+            MarkerOptions mymarkerOptions = new MarkerOptions().icon(bitmap).position(latLng);
+            //获取添加的 marker 这样便于后续的操作
+            myBaiduMap.addOverlay(mymarkerOptions);
         }
-        return new String(outputStream.toByteArray());
     }
 }
+
+
 

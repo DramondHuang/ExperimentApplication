@@ -22,15 +22,24 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
-public class FragmentOne extends Fragment {
+public class BookFragment extends Fragment {
     @Nullable
     private RecyclerView myRecyclerView;
     private RecyclerAdapter myAdapter;
     private int mPosition;
     DataSaver myDataSaver = new DataSaver();
     ArrayList<Book> tempbooklist;
+    ArrayList<Book> Booklist = new ArrayList<Book>();
+    Book Book1 = new Book("软件项目管理案例教程（第4版）", R.drawable.book_2);
+    Book Book2 = new Book("创新工程实践", R.drawable.book_no_name);
+    Book Book3 = new Book("信息安全数学基础（第2版）", R.drawable.book_1);
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        Booklist.add(Book1);
+        Booklist.add(Book2);
+        Booklist.add(Book3);
+        myDataSaver.SaveBook(this.getContext(), Booklist);
+
         View view = inflater.inflate(R.layout.fragment_book,container);
         myRecyclerView = (RecyclerView) view.findViewById(R.id.recycle_view_books);
         myRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
@@ -61,9 +70,9 @@ public class FragmentOne extends Fragment {
 
             case R.id.delete:
                 Toast.makeText(getActivity(), "delete", Toast.LENGTH_SHORT).show();
-                tempbooklist = myDataSaver.Load(getActivity());
+                tempbooklist = myDataSaver.LoadBook(getActivity());
                 tempbooklist.remove(mPosition);
-                myDataSaver.Save(getActivity(), tempbooklist);
+                myDataSaver.SaveBook(getActivity(), tempbooklist);
                 myAdapter.notifyDataSetChanged();
                 break;
 
@@ -71,7 +80,7 @@ public class FragmentOne extends Fragment {
                 Intent intent2 = new Intent(getActivity(), Add_Activity.class);
                 Toast.makeText(getActivity(), "add", Toast.LENGTH_SHORT).show();
                 intent2.putExtra("Action", "Edit");
-                tempbooklist=myDataSaver.Load(getActivity());
+                tempbooklist=myDataSaver.LoadBook(getActivity());
                 intent2.putExtra("name", tempbooklist.get(mPosition).title);
                 startActivityForResult(intent2, 0);
                 break;
@@ -82,20 +91,20 @@ public class FragmentOne extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         String name = data.getExtras().getString("book_name");
-        tempbooklist = myDataSaver.Load(getActivity());
+        tempbooklist = myDataSaver.LoadBook(getActivity());
         switch (resultCode) {
             case 0:
                 Toast.makeText(getActivity(), "Cancel", Toast.LENGTH_SHORT).show();
             case 1:         // Add book
                 Book addedbook = new Book(name, R.drawable.book_no_name);
                 tempbooklist.add(mPosition, addedbook);
-                myDataSaver.Save(getActivity(), tempbooklist);
+                myDataSaver.SaveBook(getActivity(), tempbooklist);
                 myAdapter.notifyDataSetChanged();
                 break;
 
             case 2:   // Edit book
                 tempbooklist.get(mPosition).title = name;
-                myDataSaver.Save(getActivity(), tempbooklist);
+                myDataSaver.SaveBook(getActivity(), tempbooklist);
                 myAdapter.notifyDataSetChanged();
             default:
                 //其它窗口的回传数据
@@ -116,7 +125,7 @@ public class FragmentOne extends Fragment {
 
         @Override
         public void onBindViewHolder(RecyclerAdapter.MyViewHolder holder, int position) {
-            tempbooklist = myDataSaver.Load(getActivity());
+            tempbooklist = myDataSaver.LoadBook(getActivity());
             holder.tv.setText(tempbooklist.get(position).title);
             holder.iv.setImageResource(tempbooklist.get(position).cover_id);
             holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
@@ -130,7 +139,7 @@ public class FragmentOne extends Fragment {
 
         @Override
         public int getItemCount() {
-            tempbooklist = myDataSaver.Load(getActivity());
+            tempbooklist = myDataSaver.LoadBook(getActivity());
             return tempbooklist.size();
         }
 

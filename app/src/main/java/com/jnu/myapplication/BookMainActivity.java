@@ -1,5 +1,7 @@
 package com.jnu.myapplication;
 
+import static androidx.core.content.ContextCompat.getSystemService;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -9,7 +11,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
+import android.app.DownloadManager;
+import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.ContextMenu;
@@ -37,39 +42,28 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Array;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-public class BookListMainActivity extends AppCompatActivity {
+public class BookMainActivity extends AppCompatActivity {
+    private static Context mContext;
+    //创建一个静态的方法，以便获取context对象
+    public static Context getContext(){
+        return mContext;
+    }
     //private RecyclerView myRecyclerView;
     //private RecyclerAdapter myAdapter;
     private int mPosition;
-    File file = new File(Environment.getExternalStorageDirectory(),
-            "booklist.dat");
-    DataSaver myDataSaver = new DataSaver();
-    ArrayList<Book> tempbooklist;
-
-    ArrayList<Book> Booklist = new ArrayList<Book>();
-    Book Book1 = new Book("软件项目管理案例教程（第4版）", R.drawable.book_2);
-    Book Book2 = new Book("创新工程实践", R.drawable.book_no_name);
-    Book Book3 = new Book("信息安全数学基础（第2版）", R.drawable.book_1);
-
     private TabLayout mTabLayout;
     private ViewPager2 mViewPage;
     private String[] tabTitles;//tab的标题
     private List<Fragment> mDatas = new ArrayList<>();//ViewPage2的Fragment容器
 
-    FragmentOne frgOne = new FragmentOne();
-    WebViewFragment frgTwo = new WebViewFragment();
-    MapViewFragment frgThree=new MapViewFragment();
-
-    public int getPosition() {
-        return mPosition;
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mContext = getApplicationContext();
         setContentView(R.layout.activity_book_list_main);
         try {
             initData();
@@ -81,10 +75,6 @@ public class BookListMainActivity extends AppCompatActivity {
 //        myRecyclerView.setAdapter(myAdapter = new RecyclerAdapter());
 //        registerForContextMenu(findViewById(R.id.recycle_view_books));
 
-        Booklist.add(Book1);
-        Booklist.add(Book2);
-        Booklist.add(Book3);
-        myDataSaver.Save(this, Booklist);
 
         //找到控件
         mTabLayout = findViewById(R.id.tab_layout);
@@ -122,25 +112,42 @@ public class BookListMainActivity extends AppCompatActivity {
             }
         });
 
-        SDKInitializer.setAgreePrivacy(getApplicationContext(),true);
-        //初始化百度地图数据
-        //在使用SDK各组件之前初始化context信息，传入ApplicationContext
-        SDKInitializer.initialize(getApplicationContext());
-        //自4.3.0起，百度地图SDK所有接口均支持百度坐标和国测局坐标，用此方法设置您使用的坐标类型.
-        //包括BD09LL和GCJ02两种坐标，默认是BD09LL坐标。
-        SDKInitializer.setCoordType(CoordType.BD09LL);
-        //权限设置
-        LocationClient.setAgreePrivacy(true);
     }
 
     protected void initData() throws IOException {
 
-        tabTitles = new String[]{"图书", "新闻","卖家"};
+        BookFragment frgOne = new BookFragment();
+        WebViewFragment frgTwo = new WebViewFragment();
+        MapViewFragment frgThree=new MapViewFragment();
+        GameFragment frgFour=new GameFragment();
+
+        tabTitles = new String[]{"图书", "新闻","地图","游戏"};
         mDatas.add(frgOne);
         mDatas.add(frgTwo);
         mDatas.add(frgThree);
+        mDatas.add(frgFour);
     }
 
+    // View Page Adapter
+    public class MyViewPageAdapter extends FragmentStateAdapter {
+        List<Fragment> mDatas = new ArrayList<>();
+
+        public MyViewPageAdapter(@NonNull FragmentActivity fragmentActivity, List<Fragment> mDatas) {
+            super(fragmentActivity);
+            this.mDatas = mDatas;
+        }
+
+        @NonNull
+        @Override
+        public Fragment createFragment(int position) {
+            return mDatas.get(position);
+        }
+
+        @Override
+        public int getItemCount() {
+            return mDatas.size();
+        }
+    }
 //    @Override
 //    public void onCreateContextMenu(ContextMenu menu, View v,
 //                                    ContextMenu.ContextMenuInfo menuInfo) {
@@ -246,25 +253,4 @@ public class BookListMainActivity extends AppCompatActivity {
 //            }
 //        }
 //    }
-
-    // View Page Adapter
-    public class MyViewPageAdapter extends FragmentStateAdapter {
-        List<Fragment> mDatas = new ArrayList<>();
-
-        public MyViewPageAdapter(@NonNull FragmentActivity fragmentActivity, List<Fragment> mDatas) {
-            super(fragmentActivity);
-            this.mDatas = mDatas;
-        }
-
-        @NonNull
-        @Override
-        public Fragment createFragment(int position) {
-            return mDatas.get(position);
-        }
-
-        @Override
-        public int getItemCount() {
-            return mDatas.size();
-        }
-    }
 }

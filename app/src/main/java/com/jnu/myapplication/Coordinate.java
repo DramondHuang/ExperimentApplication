@@ -1,6 +1,8 @@
 package com.jnu.myapplication;
 
-public class Coordinate {
+import java.io.Serializable;
+
+public class Coordinate implements Serializable {
     public String name;
     public double latitude;
     public double longitude;

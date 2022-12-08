@@ -14,7 +14,7 @@
         android:theme="@style/Theme.MyApplication"
         tools:targetApi="27">
         <activity
-            android:name=".BookListMainActivity"
+            android:name=".BookMainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
